@@ -282,7 +282,7 @@ def _build_suggestions(run_id: int, base_subdir: str) -> dict:
             f"Run DQMEvaluateTool with runs=[{run_id}], base_dir='{base_subdir}', batch_size=32."
         ),
         ":violet[:material/rocket_launch:] Deployment Plan": (
-            f"Run DQMDeploymentTool with model_path='sandbox/{base_subdir}/model.pth', "
+            f"Run DQMDeploymentTool with model_path='{base_subdir}/model.pth', "
             "endpoint_name='he-dqm-depthvit-v1', runtime_target='cms-dqm-stream'."
         ),
     }

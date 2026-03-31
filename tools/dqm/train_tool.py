@@ -62,7 +62,7 @@ def _train_model_on_runs_impl(
         RUNS: Single run ID (int) or list of run IDs
         base_dir: Sandbox subdirectory where model and results are saved
     """
-    from dqm.train import (
+    from dqm_core.train import (
         _train_model_on_runs_impl as _core_train_impl,
         SEED,
         isvariational,

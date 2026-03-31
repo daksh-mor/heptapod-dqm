@@ -26,7 +26,7 @@ class DQMEvaluateDepthvitTool(BaseTool):
 
     def _run(self) -> str:
         try:
-            from dqm.evaluate_tool import _evaluate_model_on_runs_impl
+            from dqm_core.evaluate_tool import _evaluate_model_on_runs_impl
 
             result = _evaluate_model_on_runs_impl(
                 runs=self.runs,

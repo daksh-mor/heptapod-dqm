@@ -75,6 +75,9 @@ heptapod/
       evaluate_tool.py
       eda_tool.py
       deployment_tool.py
+      monitoring_tool.py
+      alarming_tool.py
+      rollback_tool.py
       test_dqm_tools.py
       test_files/
         dataset/
