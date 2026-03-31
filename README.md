@@ -1,4 +1,4 @@
-# HEP DQM: A Specialized AI Agent Following the HEPTAPOD Framework
+# HEP DQM: A Specialized AI Agent Following the HEPTAPOD
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python](https://img.shields.io/badge/Python-3.12%20|%203.13-blue.svg)](https://www.python.org/downloads/)
@@ -6,35 +6,31 @@
 
 ## Overview
 
-This repository demonstrates an intelligent Data Quality Monitoring (DQM) system for High Energy Physics. It leverages **HEPTAPOD**, a framework built on top of `orchestral-ai`, which combines Large Language Models, specialized prompts, and domain-specific tools to create AI assistants tailored for physics workflows. 
-
-A core feature of our approach is the **sandbox concept**. To ensure safety, reproducibility, and prevent unintentional system modifications, all agent operations—including data access, model training, and output generation—are strictly confined within a designated sandbox directory.
+This repository demonstrates an intelligent Data Quality Monitoring (DQM) system for High Energy Physics. It leverages **HEPTAPOD**, a framework built on top of `orchestral-ai`, which combines Large Language Models, specialized prompts, sandbox directories, and domain-specific tools to create AI assistants tailored for physics workflows. 
 
 ## Demo
+![streamlit-cml_dqm_demo-2026-03-31-15-35-34online-video-cutter com-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/7e3b7cda-ec70-4f9e-8470-606de322b0eb)
 
-Here is a look at our conversational Streamlit GUI in action. The agent orchestrates natural language requests, handles the underlying complexity, and visualizes the results seamlessly.
+Here is a quick look at conversational Streamlit GUI in action. The agent orchestrates natural language requests, handles the underlying complexity, and visualizes the results seamlessly.
 
-![Streamlit GUI Demo - Agent performing EDA](images/agent_reply_for_eda_tool.png)
 
 ## Tools Implemented
+<img width="676" height="447" alt="dqm_tools" src="https://github.com/user-attachments/assets/7d0201bf-f608-44cf-9be7-e6bc820232ad" />
 
-![DQM Tools Architecture](images/dqm_tools.png)
 
 ## Details of Some Important Tools
-
-Our agent relies on a suite of robust tools to handle different stages of the DQM pipeline. Here is a brief look at how they work and what they produce:
-
 **Training Tool (`DQMTrainTool`)**  
 Trains a baseline DepthViT autoencoder strictly within the sandbox to learn normal detector patterns. It outputs real-time training progress, logging final loss metrics and optimal reconstruction thresholds.  
-![Training Output Example](images/train_reply.png)
+<img width="769" height="461" alt="train_reply" src="https://github.com/user-attachments/assets/a48d80f9-86bb-417d-99e4-47524a7ec295" />
 
 **Evaluation Tool (`DQMEvaluateTool`)**  
 Evaluates the trained model against test data to produce reconstruction and anomaly scores. It computes precision, recall, and ROC-AUC for various anomaly strengths.  
-![Evaluation Output Example](images/eval_tool_reply.png)
+<img width="566" height="334" alt="image" src="https://github.com/user-attachments/assets/e8d99b4c-9bc9-43f9-8f5a-7d51fd73b802" />
 
-**Anomaly and Trade-off Analysis**  
-Visualizes the relationship between anomaly strength and detection capability, allowing physicists to fine-tune the system's sensitivity.  
-![Anomaly vs ROC AUC](images/anomaly_vs_rocauc.png)
+
+**Dynamic Plot Generation and Analysis**  
+The agent can dynamically generate visualizations using libraries like Matplotlib. For instance, when asked to analyze the trade-offs in anomaly detection, the agent can write and execute code to plot the relationship between anomaly strength and ROC AUC. This provides immediate visual feedback, allowing physicists to fine-tune the system's sensitivity. 
+<img width="444" height="683" alt="anomaly_vs_rocauc" src="https://github.com/user-attachments/assets/9814bc8d-488a-4cdf-8378-ddd9a9e34243" />
 
 ## How to Run
 
@@ -50,7 +46,9 @@ Visualizes the relationship between anomaly strength and detection capability, a
    ```bash
    python examples/workflows/cml_dqm_cli.py
    ```
-   ![CLI Demo](images/cli_demo.png)  
+   <img width="902" height="200" alt="image" src="https://github.com/user-attachments/assets/cc8f1f51-5b6d-44ba-bc82-7414a3458d19" />
+
+
    *(Check the Jupyter notebook tutorial in `examples/workflows` for a comprehensive guide!)*
 
 ## Proposed Structure
@@ -61,19 +59,43 @@ Based on extensive iteration, we propose a clean **3-Layer Architecture** for ML
 2. **Agent Wrappers Layer:** The HEPTAPOD/Orchestral-AI tools (`tools/dqm/`). These securely wrap complex ML functions, intercepting raw inputs to enforce path-safety and formatting bounds.
 3. **Core ML Layer:** The pure Deep Learning logic (`dqm/`). PyTorch models, data loaders, and pure evaluation metrics devoid of any LLM or Agent dependencies.
 
-## Why This is Most Optimal
+```text
+heptapod/
+  dqm_core/                         # core ML package
+    train.py
+    evaluate.py
+    evaluate_tool.py
+    model_datasets.py
+    models_spatial.py
+    ...
 
-As the sole contributor to the ML4DQM project last year, I had the privilege of studying the operational real-world DQM pipelines deeply. Building on that work (which also led to an accepted workshop paper), I implemented the foundational Deep Learning logic found in the `dqm/` directory of this repo. 
+  tools/
+    dqm/                            # agent-facing wrappers and safe tool interfaces
+      train_tool.py                 # DepthViT training wrapper
+      evaluate_tool.py
+      eda_tool.py
+      deployment_tool.py
+      test_dqm_tools.py
+      test_files/
+        dataset/
+          train_data.npy
+          test_data.npy
+          he_segmentation_config_mask.npy
 
-I say this humbly: organizing the system in this layered manner solves the biggest bottleneck in current ML-physics integration. 
-- It keeps the core ML logic pristine and separate, making it testable and scientifically rigorous. 
-- It delegates all the natural language "fuzziness" to the agent wrapper layer, ensuring strict type bounds are met before touching the PyTorch models. 
-- It guarantees system safety through immediate sandboxing, meaning researchers can tinker and experiment freely without fear of breaking the deployment environment. 
+  examples/
+    workflows/
+      cml_dqm_demo.py               # Streamlit UX and provider-gated interaction
+      cml_dqm_cli.py                # CLI runner
+      cml_dqm_tutorial.ipynb        # reproducible tutorial pipeline
+      cml_dqm_sandbox/              # generated workflow outputs
+```
+
+## Why This Structure
+
+Having worked on the ML4DQM project last year, I'm confident this architecture is the right approach for integrating ML into physics workflows. It keeps the core logic pristine and independently testable, while the agent wrapper layer enforces strict type bounds and sandboxing to ensure system safety.
 
 ---
 
-Best regards,  
-**Daksh Mor**
 
 Run all tests:
 ```bash
@@ -93,51 +115,4 @@ conda run -n tradingagents python tools/dqm/test_dqm_tools.py
 ✅ All 7 tools passing
 ✅ Zero compilation errors
 ```
-
----
-
-## Citation
-
-If you use ML4DQM or HEPTAPOD in your research:
-
-```bibtex
-@article{Menzo:2025cim,
-    author = {Menzo, Tony and Roman, Alexander and Gleyzer, Sergei and Matchev, Konstantin and Fleming, George T. and H{\"o}che, Stefan and Mrenna, Stephen and Shyamsundar, Prasanth},
-    title = "{HEPTAPOD: Orchestrating High Energy Physics Workflows Towards Autonomous Agency}",
-    eprint = "2512.15867",
-    archivePrefix = "arXiv",
-    primaryClass = "hep-ph",
-    year = "2025"
-}
-```
-
-```bibtex
-@misc{roman2026orchestralai,
-      title={Orchestral AI: A Framework for Agent Orchestration}, 
-      author={Roman, Alexander and Roman, Jacob},
-      year={2026},
-      eprint={2601.02577},
-      archivePrefix={arXiv}
-}
-```
-
----
-
-## License
-
-GPL-3.0. See [LICENSE](LICENSE) for details.
-
----
-
-## Contact & Support
-
-**Issues:** [GitHub Issues](https://github.com/tonymenzo/heptapod/issues)
-
-**Maintainers:**
-- Tony Menzo - amenzo@ua.edu
-
-**Repository:** [github.com/tonymenzo/heptapod](https://github.com/tonymenzo/heptapod)
-
----
-
-**Version**: 1.0.0 | **Status**: Production Ready
+Written by **Daksh Mor** for GSOC 26 evaluation task of ML4DQM
