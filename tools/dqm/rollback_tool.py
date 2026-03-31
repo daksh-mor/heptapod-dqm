@@ -1,21 +1,8 @@
 """
 Rollback and versioning tool stub for ML4DQM model management.
 
-This tool demonstrates how to manage model versions, enable fast rollback,
-and track model provenance in production CMS workflows.
-
-Run with:
-    DQMRollbackTool(base_directory="/path/to/sandbox").run(
-        action="list_versions",
-        detector_region="HE"
-    )
-
-    DQMRollbackTool(base_directory="/path/to/sandbox").run(
-        action="rollback",
-        version="v1.2",
-        detector_region="HE",
-        reason="Data drift detected"
-    )
+Demonstrates model versioning and fast rollback for production deployments.
+Integration with model repositories is deferred to future work.
 """
 
 import json
@@ -23,88 +10,83 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
 
+from orchestral.tools.base.tool import BaseTool
+from orchestral.tools.base.field_utils import RuntimeField, StateField
+
 SCHEMA_VERSION = "dqm-rollback-1.0"
 
 
-class DQMRollbackTool:
-    """Version management and model rollback for real-time deployments.
+class DQMRollbackTool(BaseTool):
+    """Version management and model rollback stub.
     
     Manages model artifacts, enables fast rollback to known-good versions,
-    and tracks deployment history. This stub demonstrates the interface;
-    integration with production model repositories deferred.
-    
-    Attributes:
-        base_directory (str): Safe base directory for model artifacts.
+    and tracks deployment history.
     """
 
-    def __init__(self, base_directory: str):
-        self.base_directory = Path(base_directory).resolve()
-        self.name = "DQMRollbackTool"
+    action: Literal["list_versions", "rollback", "promote", "archive"] = RuntimeField(
+        description="Version management action"
+    )
+    detector_region: str = RuntimeField(default="HE", description="CMS detector region (HE, EB, EE)")
+    version: str = RuntimeField(default="", description="Target version for rollback/promotion (e.g., v1.2)")
+    reason: str = RuntimeField(default="", description="Reason for version change")
+    base_directory: str = StateField(description="Sandbox directory for model artifacts")
 
-    def run(
-        self,
-        action: Literal["list_versions", "rollback", "promote", "archive"],
-        detector_region: str = "HE",
-        version: str = "",
-        reason: str = "",
-    ) -> dict[str, Any]:
-        """Manage model versions and enable rollback.
-        
-        Args:
-            action: Version management action (list, rollback, promote, archive).
-            detector_region: CMS detector region (e.g., "HE", "EB", "EE").
-            version: Target version for rollback/promotion (e.g., "v1.2").
-            reason: Reason for version change (drift, performance issue, etc.).
-        
-        Returns:
-            dict with version history and rollback status.
-        """
+    def _run(self) -> str:
+        """Manage model versions and enable rollback."""
         try:
-            if action == "list_versions":
-                return self._list_versions(detector_region)
+            if self.action == "list_versions":
+                result = self._list_versions()
+                return json.dumps(result, separators=(",", ":"))
 
-            elif action == "rollback":
-                if not version:
-                    return {
+            elif self.action == "rollback":
+                if not self.version:
+                    result = {
                         "status": "error",
                         "message": "version required for rollback action",
                     }
-                return self._rollback_model(detector_region, version, reason)
+                    return json.dumps(result, separators=(",", ":"))
+                result = self._rollback_model()
+                return json.dumps(result, separators=(",", ":"))
 
-            elif action == "promote":
-                if not version:
-                    return {
+            elif self.action == "promote":
+                if not self.version:
+                    result = {
                         "status": "error",
                         "message": "version required for promote action",
                     }
-                return self._promote_model(detector_region, version, reason)
+                    return json.dumps(result, separators=(",", ":"))
+                result = self._promote_model()
+                return json.dumps(result, separators=(",", ":"))
 
-            elif action == "archive":
-                if not version:
-                    return {
+            elif self.action == "archive":
+                if not self.version:
+                    result = {
                         "status": "error",
                         "message": "version required for archive action",
                     }
-                return self._archive_model(detector_region, version, reason)
+                    return json.dumps(result, separators=(",", ":"))
+                result = self._archive_model()
+                return json.dumps(result, separators=(",", ":"))
 
             else:
-                return {
+                result = {
                     "status": "error",
-                    "message": f"Unknown action: {action}. Must be one of "
-                    "[list_versions, rollback, promote, archive]",
+                    "message": f"Unknown action: {self.action}",
                 }
+                return json.dumps(result, separators=(",", ":"))
 
         except Exception as e:
-            return {
+            result = {
                 "status": "error",
                 "message": f"Rollback tool error: {e}",
             }
+            return json.dumps(result, separators=(",", ":"))
 
-    def _list_versions(self, detector_region: str) -> dict[str, Any]:
-        """List available model versions for a detector region."""
+    def _list_versions(self) -> dict[str, Any]:
+        """List available model versions."""
         current_time = datetime.utcnow().isoformat()
 
-        # Stub version history (in production, read from model repository)
+        # Stub version history
         versions = [
             {
                 "version": "v1.4",
@@ -137,15 +119,70 @@ class DQMRollbackTool:
 
         return {
             "status": "ok",
-            "detector_region": detector_region,
+            "detector_region": self.detector_region,
             "total_versions": len(versions),
             "current_time": current_time,
             "versions": versions,
             "next_steps": [
-                "Choose appropriate version with: rollback(version='vX.Y', reason='...')",
-                "Promotion to production requires operator approval.",
-                "Archived versions can be restored if needed.",
+                "Choose version with: rollback(version='vX.Y', reason='...')",
+                "Promotion to production requires operator approval",
+                "Archived versions can be restored if needed",
             ],
+        }
+
+    def _rollback_model(self) -> dict[str, Any]:
+        """Rollback to a specified model version."""
+        return {
+            "status": "ok",
+            "action": "rollback",
+            "detector_region": self.detector_region,
+            "target_version": self.version,
+            "reason": self.reason,
+            "rollback_status": "confirmed",
+            "previous_version": "v1.4",
+            "new_version": self.version,
+            "estimated_time_seconds": 30,
+            "affected_channels": "All HE channels for detector_region",
+            "confirmation_message": (
+                f"Model {self.version} has been selected for deployment. "
+                "Operator approval required to deploy to production."
+            ),
+            "next_steps": [
+                "1. Verify rollback target version is correct",
+                "2. Check model metadata and training details",
+                "3. Approve deployment in DQM operations console",
+                "4. Monitor for convergence after deployment",
+            ],
+            "deployment_notes": (
+                "Stub for model repository integration. Real rollback requires "
+                "connection to persistent model storage and deployment service."
+            ),
+        }
+
+    def _promote_model(self) -> dict[str, Any]:
+        """Promote a model version to production."""
+        return {
+            "status": "ok",
+            "action": "promote",
+            "detector_region": self.detector_region,
+            "target_version": self.version,
+            "reason": self.reason,
+            "promotion_status": "pending_approval",
+            "message": (
+                f"Model {self.version} promoted to candidate status. "
+                "Awaiting operator approval for production deployment."
+            ),
+        }
+
+    def _archive_model(self) -> dict[str, Any]:
+        """Archive a model version."""
+        return {
+            "status": "ok",
+            "action": "archive",
+            "detector_region": self.detector_region,
+            "target_version": self.version,
+            "archive_status": "completed",
+            "message": f"Model {self.version} archived. Can be restored if needed.",
         }
 
     def _rollback_model(

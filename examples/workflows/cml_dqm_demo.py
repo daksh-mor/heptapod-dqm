@@ -42,9 +42,12 @@ from tools.dqm import (
     DQMTrainTool,
     DQMEvaluateTool,
     DQMDeploymentTool,
+    DQMMonitoringTool,
+    DQMAlarmingTool,
+    DQMRollbackTool,
 )
 
-IMAGE_PATH_PATTERN = re.compile(r"([A-Za-z0-9_./\\-]+\.(?:png|jpg|jpeg|gif|webp))", re.IGNORECASE)
+IMAGE_PATH_PATTERN = re.compile(r"(?:!\[.*?\]\()([^)]+\.(?:png|jpg|jpeg|gif|webp))(?:\)|(?![^)]*\)))|(?:^|\s|`)([A-Za-z0-9_./\-\s]+\.(?:png|jpg|jpeg|gif|webp))", re.IGNORECASE | re.MULTILINE)
 DATASET_PATH_PATTERN = re.compile(
     r"(data/dataset/he_train_dataset_Run\d+/train_data\.npy|tools/dqm/test_files/dataset/train_data\.npy)"
 )
@@ -109,6 +112,9 @@ def _build_agent(base_directory: str, provider: str) -> Agent:
         DQMTrainTool(base_directory=base_directory),
         DQMEvaluateTool(base_directory=base_directory),
         DQMDeploymentTool(base_directory=base_directory),
+        DQMMonitoringTool(base_directory=base_directory),
+        DQMAlarmingTool(base_directory=base_directory),
+        DQMRollbackTool(base_directory=base_directory),
         TodoRead(),
         TodoWrite(base_directory=base_directory),
     ]
@@ -171,37 +177,45 @@ def _rewrite_missing_dataset_reference(text: str, base_directory: Path) -> tuple
 def _extract_image_paths(text: str) -> list[str]:
     matches = IMAGE_PATH_PATTERN.findall(text or "")
     cleaned = []
-    for m in matches:
+    for match in matches:
+        # Handle both single and multiple capture groups
+        if isinstance(match, tuple):
+            m = next((g for g in match if g), None)
+        else:
+            m = match
+        
+        if not m:
+            continue
+            
         p = m.strip().strip("`\"'.,;:)")
-        if p:
+        if p and any(p.endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif', '.webp']):
             cleaned.append(p)
     return cleaned
 
 def _render_image_paths(image_paths: list[str], base_directory: Path, allowed_directory: Path) -> None:
     seen = set()
     base = base_directory.resolve()
-    allowed = allowed_directory.resolve()
     for raw_path in image_paths:
         candidate = Path(raw_path)
         if not candidate.is_absolute():
             candidate = (base / candidate).resolve()
 
         try:
+            # Allow any image within the repo root (base_directory), not just sandbox
             candidate.relative_to(base)
-            candidate.relative_to(allowed)
         except ValueError:
             continue
 
         if not candidate.exists() or not candidate.is_file():
             continue
 
-        rel_path = os.path.relpath(str(candidate), str(allowed))
+        rel_path = os.path.relpath(str(candidate), str(base))
         if rel_path in seen:
             continue
         seen.add(rel_path)
 
         st.image(str(candidate), use_container_width=True)
-        st.caption(f"Image location (sandbox): {rel_path}")
+        st.caption(f"📍 {rel_path}")
 
 
 def _render_assistant_content(text: str, base_directory: Path, allowed_directory: Path) -> None:
