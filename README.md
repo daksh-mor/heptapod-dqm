@@ -30,6 +30,7 @@ Evaluates the trained model against test data to produce reconstruction and anom
 
 **Dynamic Plot Generation and Analysis**  
 The agent can dynamically generate visualizations using libraries like Matplotlib. For instance, when asked to analyze the trade-offs in anomaly detection, the agent can write and execute code to plot the relationship between anomaly strength and ROC AUC. This provides immediate visual feedback, allowing physicists to fine-tune the system's sensitivity. 
+
 <img width="444" height="683" alt="anomaly_vs_rocauc" src="https://github.com/user-attachments/assets/9814bc8d-488a-4cdf-8378-ddd9a9e34243" />
 
 ## How to Run
