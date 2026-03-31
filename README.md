@@ -33,6 +33,7 @@ The agent can dynamically generate visualizations using libraries like Matplotli
 
 <img width="444" height="683" alt="anomaly_vs_rocauc" src="https://github.com/user-attachments/assets/9814bc8d-488a-4cdf-8378-ddd9a9e34243" />
 
+
 ## How to Run
 
 1. **Configure Environment:** Create a `.env` file in the root directory and add your LLM API keys (e.g., `OPENAI_API_KEY`, `GROQ_API_KEY`, etc.).
