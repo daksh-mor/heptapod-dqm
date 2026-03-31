@@ -1,205 +1,79 @@
-# **ML4DQM: Intelligent Data Quality Monitoring for CMS**
+# HEP DQM: A Specialized AI Agent Following the HEPTAPOD Framework
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python](https://img.shields.io/badge/Python-3.12%20|%203.13-blue.svg)](https://www.python.org/downloads/)
 [![Framework](https://img.shields.io/badge/Framework-Orchestral--AI-green.svg)](https://orchestral-ai.com)
 
----
+## Overview
 
-## The Journey
+This repository demonstrates an intelligent Data Quality Monitoring (DQM) system for High Energy Physics. It leverages **HEPTAPOD**, a framework built on top of `orchestral-ai`, which combines Large Language Models, specialized prompts, and domain-specific tools to create AI assistants tailored for physics workflows. 
 
-![demo](https://s8.ezgif.com/tmp/ezgif-83f55f43d1938860.gif)
+A core feature of our approach is the **sandbox concept**. To ensure safety, reproducibility, and prevent unintentional system modifications, all agent operations—including data access, model training, and output generation—are strictly confined within a designated sandbox directory.
 
+## Demo
 
-CMS generates massive amounts of detector data every second. But not all of it is good. Some channels get noisy, some detectors drift, some runs just fail.
+Here is a look at our conversational Streamlit GUI in action. The agent orchestrates natural language requests, handles the underlying complexity, and visualizes the results seamlessly.
 
-We thought: **What if an AI could learn what "normal" data looks like, then flag abnormal patterns automatically?**
+![Streamlit GUI Demo - Agent performing EDA](images/agent_reply_for_eda_tool.png)
 
-So we built an end-to-end system where you can:
-- **Explore** your detector data visually
-- **Train** a deep learning model to recognize normal patterns
-- **Evaluate** model performance and find optimal thresholds
-- **Deploy** the model to catch problems in real-time
+## Tools Implemented
 
-And it's all accessible through a simple web interface. No scripts. Just natural language conversations with an AI agent that does the heavy lifting.
+![DQM Tools Architecture](images/dqm_tools.png)
 
----
+## Details of Some Important Tools
 
-## See It In Action
+Our agent relies on a suite of robust tools to handle different stages of the DQM pipeline. Here is a brief look at how they work and what they produce:
 
-### 1. Data Exploration
-Upload your detector data and see it instantly. Heatmaps, histograms, statistics—all interactive.
+**Training Tool (`DQMTrainTool`)**  
+Trains a baseline DepthViT autoencoder strictly within the sandbox to learn normal detector patterns. It outputs real-time training progress, logging final loss metrics and optimal reconstruction thresholds.  
+![Training Output Example](images/train_reply.png)
 
-![EDA Tool - Interactive data exploration with histograms and heatmaps](images/agent_reply_for_eda_tool.png)
+**Evaluation Tool (`DQMEvaluateTool`)**  
+Evaluates the trained model against test data to produce reconstruction and anomaly scores. It computes precision, recall, and ROC-AUC for various anomaly strengths.  
+![Evaluation Output Example](images/eval_tool_reply.png)
 
-### 2. Model Training
-Train a DepthViT autoencoder on your fixture datasets. Watch it learn what normal looks like.
+**Anomaly and Trade-off Analysis**  
+Visualizes the relationship between anomaly strength and detection capability, allowing physicists to fine-tune the system's sensitivity.  
+![Anomaly vs ROC AUC](images/anomaly_vs_rocauc.png)
 
-![Training Tool - Model training progress and metrics](images/train_reply.png)
+## How to Run
 
-### 3. Evaluate & Find Thresholds
-See ROC curves and anomaly metrics. Find the sweet spot for catching real problems.
+1. **Configure Environment:** Create a `.env` file in the root directory and add your LLM API keys (e.g., `OPENAI_API_KEY`, `GROQ_API_KEY`, etc.).
+2. **Web GUI:**  
+   Launch the user interface by running:
+   ```bash
+   streamlit run examples/workflows/cml_dqm_demo.py
+   ```
+   At startup, select your preferred LLM provider, and you're good to go.
+3. **CLI Usage:**  
+   For terminal-based interaction, simply run the CLI script directly:
+   ```bash
+   python examples/workflows/cml_dqm_cli.py
+   ```
+   ![CLI Demo](images/cli_demo.png)  
+   *(Check the Jupyter notebook tutorial in `examples/workflows` for a comprehensive guide!)*
 
-![Evaluation Table - ROC-based threshold computation and performance metrics](images/eval_tool_reply.png)
+## Proposed Structure
 
-### 4. Understanding Trade-offs
-Plot anomaly strength vs ROC AUC. Fine-tune your detection strategy.
+Based on extensive iteration, we propose a clean **3-Layer Architecture** for ML-driven DQM systems:
 
-![Anomaly Strength vs ROC AUC - Model performance analysis](images/anomaly_vs_rocauc.png)
+1. **User Interface Layer:** Streamlit and CLI interfaces that handle LLM connection and chat history.
+2. **Agent Wrappers Layer:** The HEPTAPOD/Orchestral-AI tools (`tools/dqm/`). These securely wrap complex ML functions, intercepting raw inputs to enforce path-safety and formatting bounds.
+3. **Core ML Layer:** The pure Deep Learning logic (`dqm/`). PyTorch models, data loaders, and pure evaluation metrics devoid of any LLM or Agent dependencies.
 
----
+## Why This is Most Optimal
 
-## What We Built
+As the sole contributor to the ML4DQM project last year, I had the privilege of studying the operational real-world DQM pipelines deeply. Building on that work (which also led to an accepted workshop paper), I implemented the foundational Deep Learning logic found in the `dqm/` directory of this repo. 
 
-**7 Tools** that work together in a 3-layer system:
-
-![DQM Tools Architecture - Complete tool ecosystem overview](images/dqm_tools.png)
-
-| Layer | Tools | Purpose |
-|-------|-------|---------|
-| **User Interface** | Streamlit Web UI | Pick your LLM (Claude, GPT, Gemini, or local) and chat with the agent |
-| **Agent Wrappers** | EDA, Train, Evaluate, Deploy, Monitor, Alarm, Rollback | Safe, auditable interfaces to core ML code |
-| **Core ML** | DepthViT, PyTorch, scikit-learn | Pure ML logic—no LLM-dependent code |
-
-**Production Tools (4):**
-- **EDA Tool** - Explore detector data with visualizations
-- **Training Tool** - Train DepthViT models with hyperparameter control
-- **Evaluation Tool** - Compute ROC curves and optimal thresholds
-- **Deployment Tool** - Generate deployment manifests for production
-
-**Real-Time Stubs (3):**
-- **Monitoring Tool** - Track data drift and model performance
-- **Alarming Tool** - Generate severity-based alerts
-- **Rollback Tool** - Manage model versions and recovery
+I say this humbly: organizing the system in this layered manner solves the biggest bottleneck in current ML-physics integration. 
+- It keeps the core ML logic pristine and separate, making it testable and scientifically rigorous. 
+- It delegates all the natural language "fuzziness" to the agent wrapper layer, ensuring strict type bounds are met before touching the PyTorch models. 
+- It guarantees system safety through immediate sandboxing, meaning researchers can tinker and experiment freely without fear of breaking the deployment environment. 
 
 ---
 
-## How It Works
-
-```
-Your Browser (Streamlit Web UI)
-           ↓
-    Pick Your LLM
-    (Claude/GPT/Gemini/Ollama)
-           ↓
-    Agent Orchestrates Work
-    (Handles path safety, sandboxing)
-           ↓
-  DQM Tools Execute Tasks
-  (EDA, Train, Evaluate, Deploy, etc.)
-           ↓
- Core ML Stack Runs
- (PyTorch, NumPy, scikit-learn)
-```
-
----
-
-## Key Features
-
-✅ **100% Tested** - All 7 tools validated. Zero compilation errors.
-
-✅ **Safe by Default** - Path traversal prevention. Sandbox confinement. No escapes.
-
-✅ **Real Detector Data** - Fixture datasets included. Tested on CMS HE detector data.
-
-✅ **LLM Agnostic** - Works with Claude, GPT, Gemini, Groq, or free local Ollama.
-
-✅ **Reproducible** - Deterministic seeds. Bundled fixture data. All metrics exported as JSON.
-
-✅ **Extensible** - Deployment stubs ready for real-time CMS integration.
-
----
-
-## Quick Start
-
-### 1. Clone & Install
-
-```bash
-git clone https://github.com/tonymenzo/heptapod.git
-cd heptapod
-```
-
-Choose one installation method:
-
-**Option A: Using pip**
-```bash
-pip install -r requirements.txt
-```
-
-**Option B: Using conda** (recommended)
-```bash
-conda env create -f environment.yml
-conda activate heptapod
-```
-
-### 2. Set Up Your LLM
-
-**Option A: Cloud LLMs (requires API key)**
-
-Create a `.env` file in the repo root:
-
-```bash
-# Anthropic Claude - https://console.anthropic.com/
-ANTHROPIC_API_KEY=your_key_here
-
-# OpenAI GPT - https://platform.openai.com/api-keys
-OPENAI_API_KEY=your_key_here
-
-# Google Gemini - https://aistudio.google.com/app/apikey
-GOOGLE_API_KEY=your_key_here
-
-# Groq - https://console.groq.com/
-GROQ_API_KEY=your_key_here
-
-# (You only need key(s) for the provider(s) you want to use)
-```
-
-**Option B: Free Local LLM (no API key needed)**
-
-1. Install Ollama from [ollama.com](https://ollama.com/download)
-2. Start it: `ollama serve`
-3. Pull a model: `ollama pull gpt-oss:20b`
-
-No further config needed—the system finds it automatically.
-
-### 3. Run the Demo
-
-```bash
-streamlit run examples/workflows/cml_dqm_demo.py
-```
-
-Your browser opens automatically. Pick your LLM and start chatting:
-
-```
-"Show me a summary of detector data"
-"Train a model on the fixture dataset"
-"Evaluate the model and show me ROC curves"
-"What issues did you detect?"
-```
-
-The agent handles everything. You just type.
-
----
-
-## What's Inside This Repo
-
-This is **HEPTAPOD** — a general toolkit for integrating LLMs into High Energy Physics workflows.
-
-ML4DQM is the first major use case, showcasing how to:
-- Build composable tools for complex scientific work
-- Maintain safety and reproducibility at LLM scale
-- Let researchers work in natural language, not scripts
-
-**For More Info:**
-- **[Detailed submission](docs/ml4dqm_gsoc_2026_submission.md)** - Full technical overview
-- **[Tools README](tools/dqm/README.md)** - API reference for all 7 tools
-- **[Submission checklist](docs/ml4dqm_final_submission_checklist.md)** - Completeness verification
-- **[Research paper](https://arxiv.org/abs/2512.15867)** - Philosophy and design of HEPTAPOD
-- **[Contributing guide](CONTRIBUTING.md)** - How to build your own tools
-
----
-
-## Testing
+Best regards,  
+**Daksh Mor**
 
 Run all tests:
 ```bash
