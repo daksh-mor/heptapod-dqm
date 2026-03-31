@@ -16,3 +16,4 @@ from . import analysis
 from . import pdg
 from . import inspire
 from . import units
+from . import dqm

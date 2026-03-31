@@ -67,6 +67,18 @@ This architecture allows seamless integration with existing analysis frameworks 
 
 ## Tool Suite Overview
 
+### DQM Tools
+
+The `tools/dqm` category provides machine learning tools tailored for CMS Data Quality Monitoring workflows.
+
+**Available tools:**
+- `DQMDataEDATool`: Loads `.npy` datasets, computes summary stats, and writes quick-look visualizations.
+- `DQMTrainAutoencoderTool`: Trains a compact PyTorch autoencoder and saves model + metrics artifacts.
+- `DQMEvaluateAutoencoderTool`: Evaluates reconstruction error and writes per-sample score arrays.
+- `DQMRealtimeDeploymentStubTool`: Structured deployment handoff stub for future real-time integration.
+
+These tools follow the same `BaseTool` conventions as the rest of HEPTAPOD: path-safe file access, structured JSON outputs, and standardized error handling.
+
 ### Event Generation Tools
 
 #### FeynRulesToUFOTool
