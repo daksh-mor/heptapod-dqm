@@ -19,20 +19,30 @@ Here is a quick look at conversational Streamlit GUI in action. The agent orches
 
 
 ## Details of Some Important Tools
+
+**Exploratory Data Analysis Tool (`DQMEDATool`)**
+
+Scans and analyzes large multi-dimensional CMS detector arrays (e.g. .npy files) without breaching sandbox constraints. It computes critical channel-level statistics and automatically generates statistical plots, such as heatmaps and sum distributions, embedding them directly into the chat framework to identify defective channels early.
+
+<img width="540" height="649" alt="image" src="https://github.com/user-attachments/assets/f51cf059-3489-4b71-bb07-efc917dbad16" />
+
 **Training Tool (`DQMTrainTool`)**  
+
 Trains a baseline DepthViT autoencoder strictly within the sandbox to learn normal detector patterns. It outputs real-time training progress, logging final loss metrics and optimal reconstruction thresholds.  
+
 <img width="769" height="461" alt="train_reply" src="https://github.com/user-attachments/assets/a48d80f9-86bb-417d-99e4-47524a7ec295" />
 
 **Evaluation Tool (`DQMEvaluateTool`)**  
+
 Evaluates the trained model against test data to produce reconstruction and anomaly scores. It computes precision, recall, and ROC-AUC for various anomaly strengths.  
+
 <img width="566" height="334" alt="image" src="https://github.com/user-attachments/assets/e8d99b4c-9bc9-43f9-8f5a-7d51fd73b802" />
 
-
 **Dynamic Plot Generation and Analysis**  
+
 The agent can dynamically generate visualizations using libraries like Matplotlib. For instance, when asked to analyze the trade-offs in anomaly detection, the agent can write and execute code to plot the relationship between anomaly strength and ROC AUC. This provides immediate visual feedback, allowing physicists to fine-tune the system's sensitivity. 
 
 <img width="444" height="683" alt="anomaly_vs_rocauc" src="https://github.com/user-attachments/assets/9814bc8d-488a-4cdf-8378-ddd9a9e34243" />
-
 
 ## How to Run
 
