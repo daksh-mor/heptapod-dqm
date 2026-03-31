@@ -8,6 +8,9 @@
 
 ## The Journey
 
+![demo](https://s8.ezgif.com/tmp/ezgif-83f55f43d1938860.gif)
+
+
 CMS generates massive amounts of detector data every second. But not all of it is good. Some channels get noisy, some detectors drift, some runs just fail.
 
 We thought: **What if an AI could learn what "normal" data looks like, then flag abnormal patterns automatically?**
